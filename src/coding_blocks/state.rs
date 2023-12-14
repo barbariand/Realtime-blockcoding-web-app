@@ -29,13 +29,13 @@ impl Ord for Value {
         }
     }
 }
-impl Into<Value> for String {
-    fn into(self) -> Value {
-        Value::String(self)
+impl From<String> for Value {
+    fn from(val: String) -> Self {
+        Value::String(val)
     }
 }
-impl Into<Value> for i64 {
-    fn into(self) -> Value {
-        Value::Number(self)
+impl From<i64> for Value {
+    fn from(val: i64) -> Self {
+        Value::Number(val)
     }
 }

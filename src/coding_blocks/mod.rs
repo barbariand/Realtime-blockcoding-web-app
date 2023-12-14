@@ -22,7 +22,7 @@ pub struct Blocks(Vec<Box<dyn Block>>);
 impl ExecuteBlock for Blocks {
     fn execute(&self, state: &mut State) -> Result<(), BlockExecutionError> {
         for block in self.0.iter() {
-            block.preform(state)?
+            block.preform(state)?;
         }
         Ok(())
     }
