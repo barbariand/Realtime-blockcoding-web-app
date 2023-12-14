@@ -7,9 +7,9 @@ pub struct IfElseBlock<T: Condition> {
 impl<T: Condition> Block for IfElseBlock<T> {
     fn preform(&self, state: &mut State) -> Result<(), BlockExecutionError> {
         if self.condition.evaluate(state) {
-            return self.ifblocks.execute(state);
+            self.ifblocks.execute(state)
         } else {
-            return self.elseblocks.execute(state);
+            self.elseblocks.execute(state)
         }
     }
 }

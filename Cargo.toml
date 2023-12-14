@@ -1,7 +1,7 @@
 [workspace]
 members = ["app", "server"]
 [package]
-name = "Realtime-blockcoding-web-app"
+name = "realtime-blockcoding-web-app"
 version = "0.1.0"
 edition = "2021"
 

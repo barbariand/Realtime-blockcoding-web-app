@@ -12,6 +12,7 @@ impl<T: IntoTimes> Block for ForLoopBlock<T> {
         Ok(())
     }
 }
+#[allow(clippy::wrong_self_convention)]
 pub trait IntoTimes {
     fn into_times(&self, state: &mut State) -> i32;
 }

@@ -11,10 +11,24 @@ trait Comparator<L: GetValue, R: GetValue> {
 trait GetValue {
     fn value(&self) -> &Value;
 }
-struct Comparisons<C: Comparator<L, R>, L: GetValue, R: GetValue> {
+struct ComparisonBlock<C: Comparator<L, R>, L: GetValue, R: GetValue> {
     right: R,
     left: L,
     phantomcomp: PhantomData<C>,
+}
+impl<C: Comparator<L, R>, L: GetValue, R: GetValue> ComparisonBlock<C, L, R> {
+    fn new(left: L, right: R) -> Self {
+        Self {
+            left,
+            right,
+            phantomcomp: PhantomData,
+        }
+    }
+}
+impl<C: Comparator<L, R>, L: GetValue, R: GetValue> Comparator<L, R> for ComparisonBlock<C, L, R> {
+    fn cmp(ord: Ordering) -> bool {
+        C::cmp(ord)
+    }
 }
 struct LessThan;
 impl<L: GetValue, R: GetValue> Comparator<L, R> for LessThan {
@@ -23,12 +37,8 @@ impl<L: GetValue, R: GetValue> Comparator<L, R> for LessThan {
     }
 }
 impl LessThan {
-    fn new<R: GetValue, L: GetValue>(right: R, left: L) -> Comparisons<LessThan, L, R> {
-        Comparisons {
-            right,
-            left,
-            phantomcomp: PhantomData::default(),
-        }
+    fn new<R: GetValue, L: GetValue>(right: R, left: L) -> ComparisonBlock<LessThan, L, R> {
+        ComparisonBlock::new(left, right)
     }
 }
 struct GreaterThan;
@@ -38,12 +48,8 @@ impl<L: GetValue, R: GetValue> Comparator<L, R> for GreaterThan {
     }
 }
 impl GreaterThan {
-    fn new<R: GetValue, L: GetValue>(right: R, left: L) -> Comparisons<GreaterThan, L, R> {
-        Comparisons {
-            right,
-            left,
-            phantomcomp: PhantomData::default(),
-        }
+    fn new<R: GetValue, L: GetValue>(right: R, left: L) -> ComparisonBlock<GreaterThan, L, R> {
+        ComparisonBlock::new(left, right)
     }
 }
 struct Equal;
@@ -53,11 +59,7 @@ impl<L: GetValue, R: GetValue> Comparator<L, R> for Equal {
     }
 }
 impl Equal {
-    fn new<R: GetValue, L: GetValue>(right: R, left: L) -> Comparisons<Equal, L, R> {
-        Comparisons {
-            right,
-            left,
-            phantomcomp: PhantomData::default(),
-        }
+    fn new<R: GetValue, L: GetValue>(right: R, left: L) -> ComparisonBlock<Equal, L, R> {
+        ComparisonBlock::new(left, right)
     }
 }

@@ -15,7 +15,7 @@ impl<T: Block> ExecuteBlock for T {
         self.preform(state)
     }
 }
-pub(self) trait Block {
+trait Block {
     fn preform(&self, state: &mut State) -> Result<(), BlockExecutionError>;
 }
 pub struct Blocks(Vec<Box<dyn Block>>);
