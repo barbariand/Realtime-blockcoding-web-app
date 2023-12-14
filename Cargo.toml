@@ -1,0 +1,20 @@
+[workspace]
+members = ["app", "server"]
+[package]
+name = "Realtime-blockcoding-web-app"
+version = "0.1.0"
+edition = "2021"
+
+[workspace.dependencies]
+thiserror = "1.0.50"
+tracing = "0.1.40"
+[dependencies]
+
+
+[[workspace.metadata.leptos]]
+# project name
+name = "app"
+bin-package = "server"
+lib-package = "app"
+assets-dir = "app/assets"
+style-file = "app/css/main.scss"
