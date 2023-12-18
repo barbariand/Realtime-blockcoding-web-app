@@ -8,8 +8,11 @@ edition = "2021"
 [workspace.dependencies]
 thiserror = "1.0.50"
 tracing = "0.1.40"
+serde = { version = "1.0.193", features = ["derive"] }
 [dependencies]
-
+serde = { features = ["derive"] }
+thiserror = {}
+tracing = {}
 
 [[workspace.metadata.leptos]]
 # project name

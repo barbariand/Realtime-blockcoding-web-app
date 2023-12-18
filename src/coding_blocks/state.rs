@@ -1,7 +1,22 @@
-use std::{cmp::Ordering, collections::HashMap, ops::Deref};
+use std::{
+    cmp::Ordering,
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+};
+
+use serde::{Deserialize, Serialize};
+
+use super::GetValue;
 
 pub struct State {
     variables: HashMap<String, Value>,
+}
+impl State {
+    pub fn new() -> Self {
+        Self {
+            variables: HashMap::new(),
+        }
+    }
 }
 impl Deref for State {
     type Target = HashMap<String, Value>;
@@ -9,24 +24,29 @@ impl Deref for State {
         &self.variables
     }
 }
-#[derive(PartialEq, Eq)]
+impl DerefMut for State {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.variables
+    }
+}
+#[derive(PartialEq, Clone, Debug, Deserialize, Serialize)]
 pub enum Value {
     String(String),
-    Number(i64),
+    Number(f64),
+}
+impl GetValue for Value {
+    fn get_value(&self, _: &State) -> Value {
+        self.clone()
+    }
 }
 impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for Value {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match (self, other) {
+        Some(match (self, other) {
             (Value::String(v1), Value::String(v2)) => v1.cmp(v2),
             (Value::String(_v1), Value::Number(_v2)) => Ordering::Greater,
             (Value::Number(_v1), Value::String(_v2)) => Ordering::Less,
-            (Value::Number(v1), Value::Number(v2)) => v1.cmp(v2),
-        }
+            (Value::Number(v1), Value::Number(v2)) => v1.partial_cmp(v2)?,
+        })
     }
 }
 impl From<String> for Value {
@@ -34,8 +54,8 @@ impl From<String> for Value {
         Value::String(val)
     }
 }
-impl From<i64> for Value {
-    fn from(val: i64) -> Self {
+impl From<f64> for Value {
+    fn from(val: f64) -> Self {
         Value::Number(val)
     }
 }
