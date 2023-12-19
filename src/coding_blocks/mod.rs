@@ -1,7 +1,6 @@
 pub mod conditons;
 pub mod error;
 use self::{
-    conditons::ConditionEnum,
     control_blocks::{ForLoopBlock, IfBlock, IfElseBlock},
     operator_blocks::two_variable_math::SimpleMathOperation,
     state::{State, Value},
