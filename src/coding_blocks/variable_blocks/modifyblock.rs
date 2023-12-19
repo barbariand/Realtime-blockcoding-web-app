@@ -5,20 +5,23 @@ use serde::{Deserialize, Serialize};
 use crate::coding_blocks::{
     error::BlockExecutionError,
     state::{State, Value},
-    Block, GetValue,
+    Block, GetValue, ValueEnum,
 };
 #[derive(Serialize, Deserialize)]
-pub struct AssignStateBlock<V: GetValue> {
+pub struct AssignStateBlock {
     key: String,
-    value: V,
+    value: ValueEnum,
 }
-impl<V: GetValue> AssignStateBlock<V> {
-    pub fn new(key: String, value: V) -> Self {
-        Self { key, value }
+impl AssignStateBlock {
+    pub fn new<V: Into<ValueEnum>>(key: String, value: V) -> Self {
+        Self {
+            key,
+            value: value.into(),
+        }
     }
 }
 
-impl<V: GetValue> Block for AssignStateBlock<V> {
+impl Block for AssignStateBlock {
     fn preform(&self, state: &mut State) -> Result<(), BlockExecutionError> {
         let value = self.value.get_value(state);
         state.insert(self.key.clone(), value);

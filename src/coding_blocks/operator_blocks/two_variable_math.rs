@@ -4,16 +4,24 @@ use serde::{Deserialize, Serialize};
 
 use crate::coding_blocks::{
     state::{State, Value},
-    GetValue,
+    GetValue, ValueEnum,
 };
 
-trait MathOp<L: GetValue, R: GetValue> {
-    fn calc(left: &L, right: &R, state: &State) -> Value;
+trait MathOp {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value;
+    fn new(left: ValueEnum, right: ValueEnum) -> SimpleMathOperation {
+        SimpleMathOperation {
+            left,
+            right,
+            op: Self::get_op(),
+        }
+    }
+    fn get_op() -> MathOpEnum;
 }
 
-struct Plus;
-impl<L: GetValue, R: GetValue> MathOp<L, R> for Plus {
-    fn calc(left: &L, right: &R, state: &State) -> Value {
+pub struct Plus;
+impl MathOp for Plus {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
         Value::Number(
             match left.get_value(state) {
                 Value::String(_) => 0.0,
@@ -24,10 +32,13 @@ impl<L: GetValue, R: GetValue> MathOp<L, R> for Plus {
             },
         )
     }
+    fn get_op() -> MathOpEnum {
+        MathOpEnum::Plus
+    }
 }
 struct Minus;
-impl<L: GetValue, R: GetValue> MathOp<L, R> for Minus {
-    fn calc(left: &L, right: &R, state: &State) -> Value {
+impl MathOp for Minus {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
         Value::Number(
             match left.get_value(state) {
                 Value::String(_) => 0.0,
@@ -38,10 +49,13 @@ impl<L: GetValue, R: GetValue> MathOp<L, R> for Minus {
             },
         )
     }
+    fn get_op() -> MathOpEnum {
+        MathOpEnum::Minus
+    }
 }
 struct Division;
-impl<L: GetValue, R: GetValue> MathOp<L, R> for Division {
-    fn calc(left: &L, right: &R, state: &State) -> Value {
+impl MathOp for Division {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
         Value::Number(
             match left.get_value(state) {
                 Value::String(_) => 0.0,
@@ -52,10 +66,13 @@ impl<L: GetValue, R: GetValue> MathOp<L, R> for Division {
             },
         )
     }
+    fn get_op() -> MathOpEnum {
+        MathOpEnum::Division
+    }
 }
 struct Multiply;
-impl<L: GetValue, R: GetValue> MathOp<L, R> for Multiply {
-    fn calc(left: &L, right: &R, state: &State) -> Value {
+impl MathOp for Multiply {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
         Value::Number(
             match left.get_value(state) {
                 Value::String(_) => 0.0,
@@ -66,10 +83,13 @@ impl<L: GetValue, R: GetValue> MathOp<L, R> for Multiply {
             },
         )
     }
+    fn get_op() -> MathOpEnum {
+        MathOpEnum::Multiply
+    }
 }
 struct Pow;
-impl<L: GetValue, R: GetValue> MathOp<L, R> for Pow {
-    fn calc(left: &L, right: &R, state: &State) -> Value {
+impl MathOp for Pow {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
         Value::Number(
             match left.get_value(state) {
                 Value::String(_) => 0.0,
@@ -81,10 +101,13 @@ impl<L: GetValue, R: GetValue> MathOp<L, R> for Pow {
             }),
         )
     }
+    fn get_op() -> MathOpEnum {
+        MathOpEnum::Pow
+    }
 }
 struct Log;
-impl<L: GetValue, R: GetValue> MathOp<L, R> for Log {
-    fn calc(left: &L, right: &R, state: &State) -> Value {
+impl MathOp for Log {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
         Value::Number(
             (match left.get_value(state) {
                 Value::String(_) => 0.0,
@@ -96,10 +119,13 @@ impl<L: GetValue, R: GetValue> MathOp<L, R> for Log {
             }),
         )
     }
+    fn get_op() -> MathOpEnum {
+        MathOpEnum::Log
+    }
 }
 struct Mod;
-impl<L: GetValue, R: GetValue> MathOp<L, R> for Mod {
-    fn calc(left: &L, right: &R, state: &State) -> Value {
+impl MathOp for Mod {
+    fn calc(left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
         Value::Number(
             match left.get_value(state) {
                 Value::String(_) => 0.0,
@@ -111,15 +137,42 @@ impl<L: GetValue, R: GetValue> MathOp<L, R> for Mod {
             }),
         )
     }
+    fn get_op() -> MathOpEnum {
+        MathOpEnum::Mod
+    }
 }
 #[derive(Serialize, Deserialize)]
-struct SimpleMathOperation<M: MathOp<L, R>, L: GetValue, R: GetValue> {
-    left: L,
-    right: R,
-    phantomop: PhantomData<M>,
+pub struct SimpleMathOperation {
+    left: ValueEnum,
+    right: ValueEnum,
+    op: MathOpEnum,
 }
-impl<M: MathOp<L, R>, L: GetValue, R: GetValue> GetValue for SimpleMathOperation<M, L, R> {
+
+impl GetValue for SimpleMathOperation {
     fn get_value(&self, state: &State) -> Value {
-        M::calc(&self.left, &self.right, state)
+        self.op.calc(&self.left, &self.right, state)
+    }
+}
+#[derive(Serialize, Deserialize)]
+enum MathOpEnum {
+    Plus,
+    Minus,
+    Division,
+    Multiply,
+    Pow,
+    Log,
+    Mod,
+}
+impl MathOpEnum {
+    fn calc(&self, left: &ValueEnum, right: &ValueEnum, state: &State) -> Value {
+        match self {
+            MathOpEnum::Plus => Plus::calc(left, right, state),
+            MathOpEnum::Minus => Minus::calc(left, right, state),
+            MathOpEnum::Division => Division::calc(left, right, state),
+            MathOpEnum::Multiply => Multiply::calc(left, right, state),
+            MathOpEnum::Pow => Pow::calc(left, right, state),
+            MathOpEnum::Log => Log::calc(left, right, state),
+            MathOpEnum::Mod => Mod::calc(left, right, state),
+        }
     }
 }

@@ -1,10 +1,15 @@
+use serde::{Deserialize, Serialize};
+
+use crate::coding_blocks::conditons::ConditionEnum;
+
 use super::{Condition, *};
-pub struct IfElseBlock<T: Condition> {
-    condition: T,
+#[derive(Serialize, Deserialize)]
+pub struct IfElseBlock {
+    condition: ConditionEnum,
     ifblocks: Blocks,
     elseblocks: Blocks,
 }
-impl<T: Condition> Block for IfElseBlock<T> {
+impl Block for IfElseBlock {
     fn preform(&self, state: &mut State) -> Result<(), BlockExecutionError> {
         if self.condition.evaluate(state) {
             self.ifblocks.execute(state)
@@ -13,8 +18,8 @@ impl<T: Condition> Block for IfElseBlock<T> {
         }
     }
 }
-impl<T: Condition> IfElseBlock<T> {
-    fn new(ifblocks: Blocks, elseblocks: Blocks, condition: T) -> Self {
+impl IfElseBlock {
+    fn new(ifblocks: Blocks, elseblocks: Blocks, condition: ConditionEnum) -> Self {
         Self {
             condition,
             elseblocks,
@@ -38,12 +43,12 @@ mod if_else_block_tests {
         let else_assign_block =
             AssignStateBlock::new("if_executed".to_string(), Value::String("else".to_string()));
         let if_else_block = IfElseBlock::new(
-            Blocks(vec![Box::new(if_assign_block)]),
-            Blocks(vec![Box::new(else_assign_block)]),
-            condition,
+            Blocks(vec![if_assign_block.into()]),
+            Blocks(vec![else_assign_block.into()]),
+            condition.into(),
         );
 
-        if_else_block.preform(&mut state).unwrap();
+        if_else_block.execute(&mut state).unwrap();
         assert_eq!(
             state.get("if_executed").unwrap(),
             &Value::String("if".to_string())
@@ -59,12 +64,12 @@ mod if_else_block_tests {
         let else_assign_block =
             AssignStateBlock::new("if_executed".to_string(), Value::String("else".to_string()));
         let if_else_block = IfElseBlock::new(
-            Blocks(vec![Box::new(if_assign_block)]),
-            Blocks(vec![Box::new(else_assign_block)]),
-            condition,
+            Blocks(vec![if_assign_block.into()]),
+            Blocks(vec![else_assign_block.into()]),
+            condition.into(),
         );
 
-        if_else_block.preform(&mut state).unwrap();
+        if_else_block.execute(&mut state).unwrap();
         assert_eq!(
             state.get("if_executed").unwrap(),
             &Value::String("else".to_string())

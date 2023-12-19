@@ -1,12 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+use crate::coding_blocks::conditons::ConditionEnum;
+
 use super::{Condition, *};
 #[derive(Serialize, Deserialize)]
-pub struct IfBlock<T: Condition> {
-    condition: T,
+pub struct IfBlock {
+    condition: ConditionEnum,
     blocks: Blocks,
 }
-impl<T: Condition> Block for IfBlock<T> {
+impl Block for IfBlock {
     fn preform(&self, state: &mut State) -> Result<(), BlockExecutionError> {
         if self.condition.evaluate(state) {
             return self.blocks.execute(state);
@@ -14,8 +16,8 @@ impl<T: Condition> Block for IfBlock<T> {
         Ok(())
     }
 }
-impl<T: Condition> IfBlock<T> {
-    fn new(blocks: Blocks, condition: T) -> Self {
+impl IfBlock {
+    fn new(blocks: Blocks, condition: ConditionEnum) -> Self {
         Self { blocks, condition }
     }
 }
@@ -34,9 +36,11 @@ mod if_block_tests {
             "if_executed".to_string(),
             Value::String("executed".to_string()),
         );
-        let if_block = IfBlock::new(Blocks(vec![Box::new(assign_block)]), condition);
-
-        if_block.preform(&mut state).unwrap();
+        println!("hello1");
+        let if_block = IfBlock::new(Blocks(vec![assign_block.into()]), condition.into());
+        println!("Hello");
+        if_block.execute(&mut state).unwrap();
+        println!("hello-1");
         assert_eq!(
             state.get("if_executed").unwrap(),
             &Value::String("executed".to_string())
@@ -51,9 +55,9 @@ mod if_block_tests {
             "if_executed".to_string(),
             Value::String("executed".to_string()),
         );
-        let if_block = IfBlock::new(Blocks(vec![Box::new(assign_block)]), condition);
+        let if_block = IfBlock::new(Blocks(vec![assign_block.into()]), condition.into());
 
-        if_block.preform(&mut state).unwrap();
+        if_block.execute(&mut state).unwrap();
         assert!(state.get("if_executed").is_none());
     }
 }

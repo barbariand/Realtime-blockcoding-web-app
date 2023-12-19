@@ -1,27 +1,31 @@
-use crate::coding_blocks::conditons::Condition;
+use serde::{Deserialize, Serialize};
 
-pub struct NotCondition<C: Condition> {
-    condition: C,
+use crate::coding_blocks::conditons::{Condition, ConditionEnum};
+#[derive(Serialize, Deserialize)]
+pub struct NotCondition {
+    condition: ConditionEnum,
 }
-impl<C: Condition> Condition for NotCondition<C> {
+impl Condition for NotCondition {
     fn evaluate(&self, state: &crate::coding_blocks::state::State) -> bool {
         !self.condition.evaluate(state)
     }
 }
-pub struct AndBlock<L: Condition, R: Condition> {
-    left: L,
-    right: R,
+#[derive(Serialize, Deserialize)]
+pub struct AndBlock {
+    left: ConditionEnum,
+    right: ConditionEnum,
 }
-impl<L: Condition, R: Condition> Condition for AndBlock<L, R> {
+impl Condition for AndBlock {
     fn evaluate(&self, state: &crate::coding_blocks::state::State) -> bool {
         self.left.evaluate(state) && self.right.evaluate(state)
     }
 }
-pub struct OrBlock<L: Condition, R: Condition> {
-    left: L,
-    right: R,
+#[derive(Serialize, Deserialize)]
+pub struct OrBlock {
+    left: ConditionEnum,
+    right: ConditionEnum,
 }
-impl<L: Condition, R: Condition> Condition for OrBlock<L, R> {
+impl Condition for OrBlock {
     fn evaluate(&self, state: &crate::coding_blocks::state::State) -> bool {
         self.left.evaluate(state) || self.right.evaluate(state)
     }
@@ -38,10 +42,10 @@ mod not_block_tests {
         let false_condition = false;
 
         let not_block_true = NotCondition {
-            condition: true_condition,
+            condition: true_condition.into(),
         };
         let not_block_false = NotCondition {
-            condition: false_condition,
+            condition: false_condition.into(),
         };
 
         assert_eq!(not_block_true.evaluate(&state), !true_condition);
@@ -58,20 +62,20 @@ mod and_block_tests {
         let mut state = State::new();
 
         let and_block_tt = AndBlock {
-            left: true,
-            right: true,
+            left: true.into(),
+            right: true.into(),
         };
         let and_block_tf = AndBlock {
-            left: true,
-            right: false,
+            left: true.into(),
+            right: false.into(),
         };
         let and_block_ft = AndBlock {
-            left: false,
-            right: true,
+            left: false.into(),
+            right: true.into(),
         };
         let and_block_ff = AndBlock {
-            left: false,
-            right: false,
+            left: false.into(),
+            right: false.into(),
         };
 
         assert_eq!(and_block_tt.evaluate(&state), true && true);
@@ -90,20 +94,20 @@ mod or_block_tests {
         let mut state = State::new();
 
         let or_block_tt = OrBlock {
-            left: true,
-            right: true,
+            left: true.into(),
+            right: true.into(),
         };
         let or_block_tf = OrBlock {
-            left: true,
-            right: false,
+            left: true.into(),
+            right: false.into(),
         };
         let or_block_ft = OrBlock {
-            left: false,
-            right: true,
+            left: false.into(),
+            right: true.into(),
         };
         let or_block_ff = OrBlock {
-            left: false,
-            right: false,
+            left: false.into(),
+            right: false.into(),
         };
 
         assert_eq!(or_block_tt.evaluate(&state), true || true);
